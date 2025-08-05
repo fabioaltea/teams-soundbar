@@ -167,6 +167,32 @@ app.get("/play", async (req: any, res: any) => {
   }
 });
 
+app.get("/status", async (req: any, res: any) => {
+    console.log("Received request for status");
+   const meetingUrl = req.query.meeting_url as string;
+
+  if (!meetingUrl) {
+    return res.status(400).json({ error: "Missing meeting_url" });
+  }
+
+  const url = decodeURI(meetingUrl);
+  const meetingId = url.substring(
+    url.lastIndexOf("/19:meeting_") + 1,
+    url.lastIndexOf("@thread.v2/0")
+  );
+    const db = new DbHelper();
+    const existingBot= await db.getMeetingBot(meetingId);
+    if(existingBot && existingBot.bot_id) {
+      return res.json({
+        botId: existingBot.bot_id,
+        status: existingBot.bot_status
+      });
+    }else{
+      return res.status(404).json({ error: "No bot found for this meeting" });
+    }
+
+});
+
 app.post("/updateBot", async (req: any, res: any) => {
     try{
         const{data, event}=req.body;
