@@ -72,9 +72,10 @@ app.get("/invite", async (req: any, res: any) => {
 console.log("Looking for bot already in meeting:", meetingId);
   const db = new DbHelper();
   const existingBot= await db.getMeetingBot(meetingId);
-  const existingBotId= existingBot.bot_id;
-  const existingBotStatus=existingBot.bot_status;
-  if (existingBotId && existingBotId !== "") {
+  
+  if (existingBot) {
+    const existingBotId= existingBot.bot_id;
+    const existingBotStatus=existingBot.bot_status;
     console.log("Existing bot for requested meeting:", existingBotId);
     res.json({
       Id: existingBotId,
