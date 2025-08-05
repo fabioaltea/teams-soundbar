@@ -71,11 +71,14 @@ app.get("/invite", async (req: any, res: any) => {
 
 console.log("Looking for bot already in meeting:", meetingId);
   const db = new DbHelper();
-  const existingBotId = await db.getMeetingBot(meetingId);
+  const existingBot= await db.getMeetingBot(meetingId);
+  const existingBotId= existingBot.bot_id;
+  const existingBotStatus=existingBot.bot_status;
   if (existingBotId && existingBotId !== "") {
     console.log("Existing bot for requested meeting:", existingBotId);
     res.json({
       Id: existingBotId,
+      status:existingBotStatus,
       meetingUrl: meetingUrl,
       soundsCatalog: sounds,
     });
@@ -123,8 +126,6 @@ console.log("Looking for bot already in meeting:", meetingId);
 });
 
 app.get("/play", async (req: any, res: any) => {
-  console.log("Received request to play");
-
   const botId = req.query.botId;
   const soundId = req.query.soundId as string;
 
@@ -158,9 +159,6 @@ app.get("/play", async (req: any, res: any) => {
       response.statusText,
       response
     );
-    // if (!response.ok) {
-    //   throw new Error(`Error playing sound: ${response.statusText}`);
-    // }
 
     res.json({ message: "Sound played successfully" });
   } catch (error) {
@@ -169,9 +167,20 @@ app.get("/play", async (req: any, res: any) => {
   }
 });
 
-app.get("/updateBot", async (req: any, res: any) => {
-  console.log("Received request to update bot");
-  res.send("Update bot endpoint not implemented yet");
+app.post("/updateBot", async (req: any, res: any) => {
+    const{data, event}=req.body;
+    const botId=data.bot.id;
+    console.log("Received request to update bot", botId)
+
+    const db = new DbHelper();
+    if(event=="bot.call_ended" || event=="bot.fatal" || event=="bot.done"){
+          db.deleteMeetingBot(botId);
+    }else {
+        if(event=="bot.in_call_recording" || event=="bot.in_call__not_recording")
+            db.updateMeetingBot(botId, "ready");
+        if(event=="bot.joining_call")
+            db.updateMeetingBot(botId, "joining");
+    }        
 });
 
 app.listen(port, () => {
