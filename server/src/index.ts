@@ -12,9 +12,12 @@ dotenv.config({ path: './.env' });
 const app = express()
 const port = process.env.PORT || 8080
 const RECALL_API_KEY = process.env.RECALL_API_KEY;
+const originUrl = process.env.ORIGIN_URL || 'https://localhost:5173';
+
+console.log("originUrl:", originUrl);
 
 const corsOptions = {
-    origin: process.env.ORIGIN_URL || 'http://localhost:8100',
+    origin: originUrl,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'access_token', 'refresh_token'],
     exposedHeaders: ['Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
