@@ -14,7 +14,6 @@ const port = process.env.PORT || 8080
 const RECALL_API_KEY = process.env.RECALL_API_KEY;
 const originUrl = process.env.ORIGIN_URL || 'https://localhost:5173';
 
-console.log("originUrl:", originUrl);
 
 const corsOptions = {
     origin: originUrl,

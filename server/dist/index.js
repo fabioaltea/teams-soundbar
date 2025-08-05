@@ -18,11 +18,14 @@ const process_1 = __importDefault(require("process"));
 const cors_1 = __importDefault(require("cors"));
 const sounds_1 = require("./sounds");
 const DbHelper_1 = require("./DbHelper");
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config({ path: './.env' });
 const app = (0, express_1.default)();
 const port = process_1.default.env.PORT || 8080;
 const RECALL_API_KEY = process_1.default.env.RECALL_API_KEY;
+const originUrl = process_1.default.env.ORIGIN_URL || 'https://localhost:5173';
 const corsOptions = {
-    origin: process_1.default.env.ORIGIN_URL || 'http://localhost:8100',
+    origin: originUrl,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'access_token', 'refresh_token'],
     exposedHeaders: ['Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
@@ -42,7 +45,7 @@ app.get('/', (req, res) => {
     res.send("API Working");
 });
 app.get("/invite", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("Received request to invite bot");
+    console.log("Received request to invite bot", "recall api key:", process_1.default.env.RECALL_API_KEY);
     const meetingUrl = req.query.meeting_url;
     if (!meetingUrl) {
         return res.status(400).json({ error: "Missing meeting_url" });
@@ -83,7 +86,7 @@ app.get("/invite", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     Authorization: `Token ${RECALL_API_KEY}`,
                 },
                 body: JSON.stringify({
-                    bot_name: "MIDI4Meeting",
+                    bot_name: "Teams Soundbar Bot",
                     meeting_url: meetingUrl,
                     recording_config: null,
                     automatic_audio_output: {
