@@ -169,6 +169,11 @@ app.get("/play", async (req: any, res: any) => {
   }
 });
 
+app.get("/updateBot", async (req: any, res: any) => {
+  console.log("Received request to update bot");
+  res.send("Update bot endpoint not implemented yet");
+});
+
 app.listen(port, () => {
     return console.log(`Server is listening on ${port}`)
 })   
