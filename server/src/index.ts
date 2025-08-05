@@ -122,7 +122,7 @@ console.log("Looking for bot already in meeting:", meetingId);
       console.error("Recall API error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  } 
 });
 
 app.get("/play", async (req: any, res: any) => {
@@ -168,19 +168,28 @@ app.get("/play", async (req: any, res: any) => {
 });
 
 app.post("/updateBot", async (req: any, res: any) => {
-    const{data, event}=req.body;
-    const botId=data.bot.id;
-    console.log("Received request to update bot", botId)
+    try{
+        const{data, event}=req.body;
+        const botId=data.bot.id;
+        console.log("Received request to update bot", botId, "with event", event)
 
-    const db = new DbHelper();
-    if(event=="bot.call_ended" || event=="bot.fatal" || event=="bot.done"){
-          db.deleteMeetingBot(botId);
-    }else {
-        if(event=="bot.in_call_recording" || event=="bot.in_call__not_recording")
-            db.updateMeetingBot(botId, "ready");
-        if(event=="bot.joining_call")
-            db.updateMeetingBot(botId, "joining");
-    }        
+        const db = new DbHelper();
+        if(event=="bot.call_ended" || event=="bot.fatal" || event=="bot.done"){
+            db.deleteMeetingBot(botId);
+        }else {
+            if(event=="bot.in_call_recording" || event=="bot.in_call__not_recording"){
+                db.updateMeetingBot(botId, "ready");
+            }
+            if(event=="bot.joining_call"){
+                db.updateMeetingBot(botId, "joining");
+            }
+        }  
+        res.json({status:"OK"})
+
+ }catch(ex){
+    res.status(500).json({error:ex})
+ }
+    
 });
 
 app.listen(port, () => {

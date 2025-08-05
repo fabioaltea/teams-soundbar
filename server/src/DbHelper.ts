@@ -1,9 +1,13 @@
 import { Pool } from "pg";
+import dotenv from 'dotenv';
 
 export class DbHelper {
   private _pool: Pool;
 
   constructor() {
+    dotenv.config({ path: './.env' });
+    
+    console.log("connecting to db with" , process.env.DATABASE_URL)
     this._pool = new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: {
@@ -64,7 +68,10 @@ public async addMeetingBot(meetingId: string, botId: string): Promise<void> {
             "UPDATE bots SET bot_status = $1 WHERE bot_id = $2",
             [botStatus, botId]
           );
-        } finally {
+        }catch(ex){
+          throw ex;
+        }
+         finally {
           client.release();
         }
       }
