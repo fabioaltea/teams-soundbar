@@ -4,8 +4,10 @@ import process from 'process';
 import cors from 'cors';
 import { sounds } from './sounds';
 import { DbHelper } from './DbHelper';
+import dotenv from 'dotenv';
 
 
+dotenv.config({ path: './.env' });
 
 const app = express()
 const port = process.env.PORT || 8080
@@ -21,7 +23,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.options('*', cors(corsOptions));
+app.options('*', cors(corsOptions)) ;
 
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -40,7 +42,7 @@ app.get('/', (req: any, res: any) => {
 
 
 app.get("/invite", async (req: any, res: any) => {
-  console.log("Received request to invite bot");
+  console.log("Received request to invite bot", "recall api key:", process.env.RECALL_API_KEY);
   const meetingUrl = req.query.meeting_url as string;
 
   if (!meetingUrl) {
@@ -65,7 +67,7 @@ app.get("/invite", async (req: any, res: any) => {
     url.lastIndexOf("@thread.v2/0")
   );
 
-      console.log("Looking for bot already in meeting:", meetingId);
+console.log("Looking for bot already in meeting:", meetingId);
   const db = new DbHelper();
   const existingBotId = await db.getMeetingBot(meetingId);
   if (existingBotId && existingBotId !== "") {
@@ -85,7 +87,7 @@ app.get("/invite", async (req: any, res: any) => {
           Authorization: `Token ${RECALL_API_KEY}`,
         },
         body: JSON.stringify({
-          bot_name: "MIDI4Meeting",
+          bot_name: "Teams Soundbar Bot",
           meeting_url: meetingUrl,
           recording_config: null,
           automatic_audio_output: {
