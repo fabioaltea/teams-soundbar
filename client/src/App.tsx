@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import * as microsoftTeams from "@microsoft/teams-js";
 import './App.css'
-import { Button, FluentProvider, Input, Subtitle1, Subtitle2, teamsLightTheme, Title2 } from '@fluentui/react-components';
+import { FluentProvider,  teamsLightTheme } from '@fluentui/react-components';
 
 
 function App() {
