@@ -28,7 +28,7 @@ function App() {
 }, []);
 
   useEffect(() => {
-    const interval=setInterval(async() => {
+    setInterval(async() => {
       if(bot){
         console.log("Checking bot status...");
         const b=await fetch(`${apiUrl}/status?meeting_url=${meetingUrl}`).then(response => response.json())
