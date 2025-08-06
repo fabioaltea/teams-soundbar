@@ -18,7 +18,7 @@ export const SoundBtn = ({ sound, onPlay, disabled, active }: ISoundBtnProps) =>
         onPlay(id);
     }
   return (
-    <div className='sound-btn' onClick={()=> handlePlay(sound.id)}>
+    <div className='sound-btn' onClick={()=> {if(!disabled)handlePlay(sound.id)}}>
         <div style={{width:"100%",display:'flex', flexDirection:"row-reverse", alignItems:"center",justifyContent:"space-between"}}>
             {/* <button className={`invite-btn play`} onClick={() => handlePlay(sound.id)} disabled={disabled}>Play</button> */}
             {/* <div style={{width:"inherit", height:"40px", overflow:"hidden", borderRadius:"8px"}}>
@@ -30,12 +30,7 @@ export const SoundBtn = ({ sound, onPlay, disabled, active }: ISoundBtnProps) =>
             </div> */}
         </div>
         <div style={{width:"100%", display:'flex', flexDirection:"row", alignItems:"center", justifyContent:"space-between", fontSize:"10px", fontWeight:300}}>
-            {/* {sound.name} */}
-            <img
-                style={{width:"50px", height:50, objectFit:"cover"}}
-                src={sound.imgUrl}
-                alt=""
-            />
+            {sound.name}
             <div>
                 <span
                     className={`status-indicator ${active ? 'enabled' : ''}`}
@@ -44,6 +39,11 @@ export const SoundBtn = ({ sound, onPlay, disabled, active }: ISoundBtnProps) =>
                     }}
                 />
             </div>
+            {/* <img
+                style={{width:"50px", height:50, objectFit:"cover"}}
+                src={sound.imgUrl}
+                alt=""
+            /> */}
         </div>   
     </div>
   );
