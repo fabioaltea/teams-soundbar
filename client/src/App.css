@@ -87,16 +87,61 @@
   margin-top: 20px;
 }
 
-.meeting-url-container {
+.app-title{
+  font-size:30px;
+  font-weight:500;
+}
+
+.container {
   display: flex;
   align-items: center;
-  background: #f8f8f86c;
+  background: transparent;
   border-radius: 20px;
   padding: 4px 8px;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.127);
   width: 400px;
   margin: 16px 0;
 }
+
+@media (prefers-color-scheme: dark) {
+  .container {
+    background: rgba(30, 32, 40, 0.85);
+    box-shadow: 0 0 12px rgba(0,0,0,0.35);
+  }
+
+  .app-title {
+    color: #fff;
+  }
+
+  .meeting-url-input {
+    color: #fff;
+  }
+
+  .sound-btn {
+    color: #ffffff;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .container {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 8px rgba(0,0,0,0.10);
+  }
+
+  .app-title {
+    color: #222;
+  }
+
+  .meeting-url-input {
+    color: #222;
+  }
+
+  .sound-btn {
+    color: #222;
+  }
+}
+
+
 
 .meeting-url-input {
   flex: 1;
@@ -106,10 +151,7 @@
   font-size: 18px;
   padding: 10px 14px;
   border-radius: 16px;
-  color: #222;
 }
-
-
 
 .invite-btn {
   border: none;
@@ -156,9 +198,10 @@
 .invite-btn.play{
   background: rgb(105, 199, 82);
   font-size: 10px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.127);
-  padding: 8px 8px;
-
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.127);
+  padding: 8px;
+  border-radius: 8px;
+  height: -webkit-fill-available;
 }
 
 .invite-btn.play:hover{
@@ -187,18 +230,36 @@ box-shadow: 0 0 12px rgba(0, 0, 0, 0.218);
 }
 
 .sound-btn{
-  height: 30px;
   align-content: center;
-  border-radius: 20px;
-  padding: 8px 8px;
-  margin: 8px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.127);
+  border-radius: 14px;
+  padding: 8px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-between;
   align-items: center;
-
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.218);
+  gap:5px;
+  flex-grow: 1;
+  width:fit-content;
+  
 }
 .sound-btn:hover{
-  
+  cursor:pointer;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.218);
+  transition: box-shadow 0.2s;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  background-color: #ccc;
+  box-shadow: inset 0px 0px 0px 1px #b5b5b588;  
+  margin-left:8px;
+}
+
+.status-indicator.enabled {
+  background-color: #0f3; /* Default color */
+  box-shadow: 0 0 6px 2px #0f08;
 }
