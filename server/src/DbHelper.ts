@@ -37,13 +37,12 @@ export class DbHelper {
     }
   }
 
-public async addMeetingBot(meetingId: string, botId: string): Promise<void> {
+public async addMeetingBot(meetingId: string, botId: string, status: string): Promise<void> {
     const client = await this._pool.connect();
-    const startStatus="pending"
     try {
         await client.query(
             "INSERT INTO bots (meeting_id, bot_id, bot_status) VALUES ($1, $2, $3)",
-            [meetingId, botId,startStatus]
+            [meetingId, botId, status]
         );
     } finally {
         client.release();

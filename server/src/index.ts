@@ -93,14 +93,14 @@ console.log("Looking for bot already in meeting:", meetingId);
           Authorization: `Token ${RECALL_API_KEY}`,
         },
         body: JSON.stringify({
-          bot_name: "Teams Soundbar Bot",
+          bot_name: "MIDI4Meeting",
           meeting_url: meetingUrl,
           recording_config: null,
           automatic_audio_output: {
             in_call_recording: {
               data: {
                 kind: "mp3",
-                b64_data: "aaa",
+                b64_data: "YOURAUDIO",
               },
             },
           },
@@ -116,9 +116,9 @@ console.log("Looking for bot already in meeting:", meetingId);
           .json({ error: "Recall API response missing bot id", bot });
       }
 
-      await db.addMeetingBot(meetingId, bot.id);
+      await db.addMeetingBot(meetingId, bot.id,"pending");
 
-      res.json({ Id: bot.id, meetingUrl: meetingUrl, soundsCatalog: sounds });
+      res.json({ Id: bot.id, status:"pending", meetingUrl: meetingUrl, soundsCatalog: sounds });
     } catch (error) {
       console.error("Recall API error:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -204,11 +204,14 @@ app.post("/updateBot", async (req: any, res: any) => {
         if(event=="bot.call_ended" || event=="bot.fatal" || event=="bot.done"){
             db.deleteMeetingBot(botId);
         }else {
-            if(event=="bot.in_call_recording" || event=="bot.in_call__not_recording"){
+            if(event=="bot.in_call_recording" || event=="bot.in_call_not_recording"){
                 db.updateMeetingBot(botId, "ready");
             }
             if(event=="bot.joining_call"){
                 db.updateMeetingBot(botId, "joining");
+            }
+            if(event=="bot.in_waiting_room"){
+                db.updateMeetingBot(botId, "lobby");
             }
         }  
         res.json({status:"OK"})
