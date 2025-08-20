@@ -264,7 +264,7 @@ box-shadow: 0 0 12px rgba(0, 0, 0, 0.218);
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.218);
+  box-shadow: 0 0 3px rgba(102, 102, 102, 0.218);
   gap:5px;
   flex-grow: 1;
   width:fit-content;
@@ -272,7 +272,7 @@ box-shadow: 0 0 12px rgba(0, 0, 0, 0.218);
 }
 .sound-btn:hover{
   cursor:pointer;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.218);
+  box-shadow: 0 0 5px rgba(90, 90, 90, 0.218);
   transition: box-shadow 0.2s;
 }
 
@@ -289,4 +289,8 @@ box-shadow: 0 0 12px rgba(0, 0, 0, 0.218);
 .status-indicator.enabled {
   background-color: #0f3; /* Default color */
   box-shadow: 0 0 6px 2px #0f08;
+}
+
+.enabled{
+  box-shadow: 0 0 5px 2px #0f08 !important;
 }

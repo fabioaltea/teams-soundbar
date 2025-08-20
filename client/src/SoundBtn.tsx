@@ -18,8 +18,8 @@ export const SoundBtn = ({ sound, onPlay, disabled, active }: ISoundBtnProps) =>
         onPlay(id);
     }
     return (
-        <div className='sound-btn' onClick={() => { if (!disabled) handlePlay(sound.id) }}>
-            <div style={{ width: "100%", display: 'flex', flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between" }}>
+        <div className={`sound-btn ${active?"enabled":""}`} onClick={() => { if (!disabled) handlePlay(sound.id) }}>
+            {/*<div style={{ width: "100%", display: 'flex', flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between" }}>*/}
                 {/* <button className={`invite-btn play`} onClick={() => handlePlay(sound.id)} disabled={disabled}>Play</button> */}
                 {/* <div style={{width:"inherit", height:"40px", overflow:"hidden", borderRadius:"8px"}}>
             <img
@@ -28,8 +28,8 @@ export const SoundBtn = ({ sound, onPlay, disabled, active }: ISoundBtnProps) =>
                 alt=""
             />
             </div> */}
-            </div>
-            <div style={{ width: "100%", display: 'flex', flexDirection: "row", alignItems: "center", justifyContent: "space-between", fontSize: "10px", fontWeight: 300 }}>
+            {/*</div>*/}
+            <div style={{ width: "100%", display: 'flex', flexDirection: "row", alignItems: "center", justifyContent: "space-between", fontSize: "10px", fontWeight: 400 }}>
                 {sound.name}
                 <div>
                     <span
