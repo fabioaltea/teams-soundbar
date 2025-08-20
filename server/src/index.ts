@@ -2,7 +2,6 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import process from 'process';
 import cors from 'cors';
-import { sounds } from './sounds';
 import { DbHelper } from './DbHelper';
 import dotenv from 'dotenv';
 
@@ -72,7 +71,8 @@ app.get("/invite", async (req: any, res: any) => {
 console.log("Looking for bot already in meeting:", meetingId);
   const db = new DbHelper();
   const existingBot= await db.getMeetingBot(meetingId);
-  
+  const sounds=await db.getSoundsCatalog();
+
   if (existingBot) {
     const existingBotId= existingBot.bot_id;
     const existingBotStatus=existingBot.bot_status;
@@ -130,9 +130,9 @@ app.get("/play", async (req: any, res: any) => {
   const botId = req.query.botId;
   const soundId = req.query.soundId as string;
 
-  const sound = sounds.find((s: any) => s.id === soundId);
+  const sound = await new DbHelper().getSound(Number(soundId));
 
-  console.log("Received request to play for bot:", botId, "sound:", sound);
+  console.log("Received request to play for bot:", botId, "sound:", soundId);
 
   if (!botId) {
     return res.status(400).json({ error: "Missing bot ID" });
@@ -149,7 +149,7 @@ app.get("/play", async (req: any, res: any) => {
         },
         body: JSON.stringify({
           kind: "mp3",
-          b64_data: sound?.base64,
+          b64_data: sound[0].data, 
         }),
       }
     );
@@ -193,6 +193,30 @@ app.get("/status", async (req: any, res: any) => {
     }
 
 });
+
+app.get("/sounds", async (req: any, res: any) => {
+  const db=new DbHelper();
+  try{
+    const sounds=await db.getSoundsCatalog();
+    res.json(sounds);
+  }catch(error){
+    console.error("Error fetching sounds:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+})
+
+// app.get("/saveSounds", async (req: any, res: any) => {
+//     console.log("Received request to save sounds");
+//     const db = new DbHelper();
+//     try {
+//         await db.addSoundsDB(sounds);
+//         res.json({ status: "Sounds saved successfully" });
+//     } catch (error) {
+//         console.error("Error saving sounds:", error);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// })
+
 
 app.post("/updateBot", async (req: any, res: any) => {
     try{
