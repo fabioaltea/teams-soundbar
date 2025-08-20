@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import * as microsoftTeams from "@microsoft/teams-js";
 import "./App.css";
 import { FluentProvider, teamsLightTheme } from "@fluentui/react-components";
-import { Share24Regular, Checkmark24Filled } from "@fluentui/react-icons";
+import { Share24Regular, Checkmark24Filled, Share16Regular, Checkmark16Filled } from "@fluentui/react-icons";
 import { logo } from "./assets/images";
 import { SoundBtn } from "./SoundBtn";
 
@@ -119,23 +119,20 @@ function App() {
             {status == "lobby" && "In Lobby"}
             {status == "ready" && "In Call"}
           </button>
-          <button>
-            {!copied ? (
-              <Share24Regular
-                onClick={() => {
+          <button className={`generic-btn`} style={{paddingTop:10}}  onClick={() => {
                   const currentUrl: string = window.location.href;
                   navigator.clipboard.writeText(
                     `${currentUrl}?meeting=${meetingUrl}`
                   );
                   setCopied(true);
-                }}
-              />
+                  setTimeout(() => {
+                    setCopied(false);
+                  }, 2000);
+                }}>
+            {!copied ? (
+              <Share16Regular/>
             ) : (
-              <Checkmark24Filled
-                onClick={() => {
-                  setCopied(false);
-                }}
-              />
+              <Checkmark16Filled/>
             )}
           </button>
         </div>

@@ -106,7 +106,7 @@
 @media (prefers-color-scheme: dark) {
   .container {
     background: rgba(30, 32, 40, 0.85);
-    box-shadow: 0 0 12px rgba(0,0,0,0.35);
+    box-shadow: 0 0 12px rgb(49 49 49 / 35%);
   }
 
   .app-title {
@@ -120,12 +120,20 @@
   .sound-btn {
     color: #ffffff;
   }
+
+  .generic-btn{
+      color: white;
+  }
 }
 
 @media (prefers-color-scheme: light) {
   .container {
     background: rgba(255, 255, 255, 0.85);
     box-shadow: 0 0 8px rgba(0,0,0,0.10);
+  }
+
+  .generic-btn{
+      color: rgba(30, 32, 40, 0.85) !important;
   }
 
   .app-title {
@@ -153,10 +161,28 @@
   border-radius: 16px;
 }
 
+.generic-btn {
+  border: none;
+  color: #fff;
+  border-radius: 14px;
+  padding: 8px 10px;
+  margin-left: 8px;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+  outline: none !important;
+}
+
+.generic-btn:hover {
+  filter: brightness(0.9);
+  transition: filter 0.2s;
+}
+
 .invite-btn {
   border: none;
   background: rgb(80, 83, 180);
-  color: #fff;
+  color: #fff;  
   border-radius: 14px;
   padding: 8px 16px;
   margin-left: 8px;
@@ -164,6 +190,7 @@
   font-size: 15px;
   cursor: pointer;
   transition: background 0.2s;
+  outline:none !important;
 }
 
 .invite-btn:hover{
