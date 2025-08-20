@@ -17,10 +17,6 @@ function App() {
   const [status, setStatus] = useState("");
 
   useEffect(() => {
-
-  });
-
-  useEffect(() => {
     microsoftTeams.app.initialize().then(() => {
       microsoftTeams.app.getContext().then(context => {
         console.log("Teams context:", context);
