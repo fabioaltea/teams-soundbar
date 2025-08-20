@@ -18,29 +18,37 @@ const process_1 = __importDefault(require("process"));
 const cors_1 = __importDefault(require("cors"));
 const DbHelper_1 = require("./DbHelper");
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config({ path: './.env' });
+dotenv_1.default.config({ path: "./.env" });
 const app = (0, express_1.default)();
 const port = process_1.default.env.PORT || 8080;
 const RECALL_API_KEY = process_1.default.env.RECALL_API_KEY;
-const originUrl = process_1.default.env.ORIGIN_URL || 'https://localhost:5173';
+const originUrl = process_1.default.env.ORIGIN_URL || "https://localhost:5173";
 const corsOptions = {
     origin: originUrl,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'access_token', 'refresh_token'],
-    exposedHeaders: ['Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
-    credentials: true
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "access_token",
+        "refresh_token",
+    ],
+    exposedHeaders: [
+        "Access-Control-Allow-Origin",
+        "Access-Control-Allow-Credentials",
+    ],
+    credentials: true,
 };
 app.use((0, cors_1.default)(corsOptions));
-app.options('*', (0, cors_1.default)(corsOptions));
+app.options("*", (0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.raw());
 app.use((req, res, next) => {
-    console.log('Passing through express. REQ:', req.method, req.url);
+    console.log("Passing through express. REQ:", req.method, req.url);
     next();
 });
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
     res.send("API Working");
 });
 app.get("/invite", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -63,7 +71,19 @@ app.get("/invite", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
     }
     const tenantId = contextObj === null || contextObj === void 0 ? void 0 : contextObj.TiD;
-    const meetingId = url.substring(url.lastIndexOf("/19:meeting_") + 1, url.lastIndexOf("@thread.v2/0"));
+    let meetingId;
+    if (url.includes("/19:meeting_")) {
+        meetingId = url.substring(url.lastIndexOf("/19:meeting_") + 1, url.lastIndexOf("@thread.v2/0"));
+    }
+    else {
+        const meetingNumericIdMatch = url.match(/meet\/(\d+)/);
+        if (meetingNumericIdMatch && meetingNumericIdMatch[1]) {
+            meetingId = meetingNumericIdMatch[1];
+        }
+    }
+    if (!meetingId) {
+        return res.status(400).json({ error: "Missing meeting_id" });
+    }
     console.log("Looking for bot already in meeting:", meetingId);
     const db = new DbHelper_1.DbHelper();
     const existingBot = yield db.getMeetingBot(meetingId);
@@ -110,7 +130,12 @@ app.get("/invite", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     .json({ error: "Recall API response missing bot id", bot });
             }
             yield db.addMeetingBot(meetingId, bot.id, "pending");
-            res.json({ Id: bot.id, status: "pending", meetingUrl: meetingUrl, soundsCatalog: sounds });
+            res.json({
+                Id: bot.id,
+                status: "pending",
+                meetingUrl: meetingUrl,
+                soundsCatalog: sounds,
+            });
         }
         catch (error) {
             console.error("Recall API error:", error);
@@ -148,18 +173,16 @@ app.get("/play", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 }));
 app.get("/status", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("Received request for status");
-    const meetingUrl = req.query.meeting_url;
-    if (!meetingUrl) {
-        return res.status(400).json({ error: "Missing meeting_url" });
+    const meetingId = req.query.meeting_id;
+    if (!meetingId) {
+        return res.status(400).json({ error: "Missing meeting_id" });
     }
-    const url = decodeURI(meetingUrl);
-    const meetingId = url.substring(url.lastIndexOf("/19:meeting_") + 1, url.lastIndexOf("@thread.v2/0"));
     const db = new DbHelper_1.DbHelper();
     const existingBot = yield db.getMeetingBot(meetingId);
     if (existingBot && existingBot.bot_id) {
         return res.json({
             botId: existingBot.bot_id,
-            status: existingBot.bot_status
+            status: existingBot.bot_status,
         });
     }
     else {
@@ -194,11 +217,14 @@ app.post("/updateBot", (req, res) => __awaiter(void 0, void 0, void 0, function*
         const botId = data.bot.id;
         console.log("Received request to update bot", botId, "with event", event);
         const db = new DbHelper_1.DbHelper();
-        if (event == "bot.call_ended" || event == "bot.fatal" || event == "bot.done") {
+        if (event == "bot.call_ended" ||
+            event == "bot.fatal" ||
+            event == "bot.done") {
             db.deleteMeetingBot(botId);
         }
         else {
-            if (event == "bot.in_call_recording" || event == "bot.in_call_not_recording") {
+            if (event == "bot.in_call_recording" ||
+                event == "bot.in_call_not_recording") {
                 db.updateMeetingBot(botId, "ready");
             }
             if (event == "bot.joining_call") {

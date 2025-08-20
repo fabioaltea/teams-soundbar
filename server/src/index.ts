@@ -1,49 +1,57 @@
-import express from 'express'
-import bodyParser from 'body-parser'
-import process from 'process';
-import cors from 'cors';
-import { DbHelper } from './DbHelper';
-import dotenv from 'dotenv';
+import express from "express";
+import bodyParser from "body-parser";
+import process from "process";
+import cors from "cors";
+import { DbHelper } from "./DbHelper";
+import dotenv from "dotenv";
 
+dotenv.config({ path: "./.env" });
 
-dotenv.config({ path: './.env' });
-
-const app = express()
-const port = process.env.PORT || 8080
+const app = express();
+const port = process.env.PORT || 8080;
 const RECALL_API_KEY = process.env.RECALL_API_KEY;
-const originUrl = process.env.ORIGIN_URL || 'https://localhost:5173';
-
+const originUrl = process.env.ORIGIN_URL || "https://localhost:5173";
 
 const corsOptions = {
-    origin: originUrl,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'access_token', 'refresh_token'],
-    exposedHeaders: ['Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
-    credentials: true
-}
+  origin: originUrl,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "access_token",
+    "refresh_token",
+  ],
+  exposedHeaders: [
+    "Access-Control-Allow-Origin",
+    "Access-Control-Allow-Credentials",
+  ],
+  credentials: true,
+};
 
 app.use(cors(corsOptions));
 
-app.options('*', cors(corsOptions)) ;
+app.options("*", cors(corsOptions));
 
-app.use(express.json())
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 
 app.use((req, res, next) => {
-    console.log('Passing through express. REQ:', req.method, req.url);
-    next();
+  console.log("Passing through express. REQ:", req.method, req.url);
+  next();
 });
 
-
-app.get('/', (req: any, res: any) => {
-    res.send("API Working")
-})
-
+app.get("/", (req: any, res: any) => {
+  res.send("API Working");
+});
 
 app.get("/invite", async (req: any, res: any) => {
-  console.log("Received request to invite bot", "recall api key:", process.env.RECALL_API_KEY);
+  console.log(
+    "Received request to invite bot",
+    "recall api key:",
+    process.env.RECALL_API_KEY
+  );
   const meetingUrl = req.query.meeting_url as string;
 
   if (!meetingUrl) {
@@ -63,28 +71,44 @@ app.get("/invite", async (req: any, res: any) => {
     }
   }
   const tenantId = contextObj?.TiD;
-  const meetingId = url.substring(
-    url.lastIndexOf("/19:meeting_") + 1,
-    url.lastIndexOf("@thread.v2/0")
-  );
+  let meetingId;
 
-console.log("Looking for bot already in meeting:", meetingId);
+  if (url.includes("/19:meeting_")) {
+    meetingId = url.substring(
+      url.lastIndexOf("/19:meeting_") + 1,
+      url.lastIndexOf("@thread.v2/0")
+    );
+  } else {
+    const meetingNumericIdMatch = url.match(/meet\/(\d+)/);
+    if (meetingNumericIdMatch && meetingNumericIdMatch[1]) {
+      meetingId = meetingNumericIdMatch[1];
+    }
+  }
+
+   if (!meetingId) {
+    return res.status(400).json({ error: "Missing meeting_id" });
+  }
+
+  console.log("Looking for bot already in meeting:", meetingId);
   const db = new DbHelper();
-  const existingBot= await db.getMeetingBot(meetingId);
-  const sounds=await db.getSoundsCatalog();
+  const existingBot = await db.getMeetingBot(meetingId);
+  const sounds = await db.getSoundsCatalog();
 
   if (existingBot) {
-    const existingBotId= existingBot.bot_id;
-    const existingBotStatus=existingBot.bot_status;
+    const existingBotId = existingBot.bot_id;
+    const existingBotStatus = existingBot.bot_status;
     console.log("Existing bot for requested meeting:", existingBotId);
     res.json({
       Id: existingBotId,
-      status:existingBotStatus,
+      status: existingBotStatus,
       meetingUrl: meetingUrl,
       soundsCatalog: sounds,
     });
   } else {
-    console.log("Any existing bot found for requested meeting. Now creating new bot for meeting:", meetingId);
+    console.log(
+      "Any existing bot found for requested meeting. Now creating new bot for meeting:",
+      meetingId
+    );
     try {
       const response = await fetch("https://us-west-2.recall.ai/api/v1/bot", {
         method: "POST",
@@ -116,14 +140,19 @@ console.log("Looking for bot already in meeting:", meetingId);
           .json({ error: "Recall API response missing bot id", bot });
       }
 
-      await db.addMeetingBot(meetingId, bot.id,"pending");
+      await db.addMeetingBot(meetingId, bot.id, "pending");
 
-      res.json({ Id: bot.id, status:"pending", meetingUrl: meetingUrl, soundsCatalog: sounds });
+      res.json({
+        Id: bot.id,
+        status: "pending",
+        meetingUrl: meetingUrl,
+        soundsCatalog: sounds,
+      });
     } catch (error) {
       console.error("Recall API error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
-  } 
+  }
 });
 
 app.get("/play", async (req: any, res: any) => {
@@ -149,7 +178,7 @@ app.get("/play", async (req: any, res: any) => {
         },
         body: JSON.stringify({
           kind: "mp3",
-          b64_data: sound[0].data, 
+          b64_data: sound[0].data,
         }),
       }
     );
@@ -169,41 +198,36 @@ app.get("/play", async (req: any, res: any) => {
 });
 
 app.get("/status", async (req: any, res: any) => {
-    console.log("Received request for status");
-   const meetingUrl = req.query.meeting_url as string;
+  console.log("Received request for status");
+  const meetingId = req.query.meeting_id as string;
 
-  if (!meetingUrl) {
-    return res.status(400).json({ error: "Missing meeting_url" });
+  if (!meetingId) {
+    return res.status(400).json({ error: "Missing meeting_id" });
   }
 
-  const url = decodeURI(meetingUrl);
-  const meetingId = url.substring(
-    url.lastIndexOf("/19:meeting_") + 1,
-    url.lastIndexOf("@thread.v2/0")
-  );
-    const db = new DbHelper();
-    const existingBot= await db.getMeetingBot(meetingId);
-    if(existingBot && existingBot.bot_id) {
-      return res.json({
-        botId: existingBot.bot_id,
-        status: existingBot.bot_status
-      });
-    }else{
-      return res.status(404).json({ error: "No bot found for this meeting" });
-    }
-
+  
+  const db = new DbHelper();
+  const existingBot = await db.getMeetingBot(meetingId);
+  if (existingBot && existingBot.bot_id) {
+    return res.json({
+      botId: existingBot.bot_id,
+      status: existingBot.bot_status,
+    });
+  } else {
+    return res.status(404).json({ error: "No bot found for this meeting" });
+  }
 });
 
 app.get("/sounds", async (req: any, res: any) => {
-  const db=new DbHelper();
-  try{
-    const sounds=await db.getSoundsCatalog();
+  const db = new DbHelper();
+  try {
+    const sounds = await db.getSoundsCatalog();
     res.json(sounds);
-  }catch(error){
+  } catch (error) {
     console.error("Error fetching sounds:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-})
+});
 
 // app.get("/saveSounds", async (req: any, res: any) => {
 //     console.log("Received request to save sounds");
@@ -217,35 +241,39 @@ app.get("/sounds", async (req: any, res: any) => {
 //     }
 // })
 
-
 app.post("/updateBot", async (req: any, res: any) => {
-    try{
-        const{data, event}=req.body;
-        const botId=data.bot.id;
-        console.log("Received request to update bot", botId, "with event", event)
+  try {
+    const { data, event } = req.body;
+    const botId = data.bot.id;
+    console.log("Received request to update bot", botId, "with event", event);
 
-        const db = new DbHelper();
-        if(event=="bot.call_ended" || event=="bot.fatal" || event=="bot.done"){
-            db.deleteMeetingBot(botId);
-        }else {
-            if(event=="bot.in_call_recording" || event=="bot.in_call_not_recording"){
-                db.updateMeetingBot(botId, "ready");
-            }
-            if(event=="bot.joining_call"){
-                db.updateMeetingBot(botId, "joining");
-            }
-            if(event=="bot.in_waiting_room"){
-                db.updateMeetingBot(botId, "lobby");
-            }
-        }  
-        res.json({status:"OK"})
-
- }catch(ex){
-    res.status(500).json({error:ex})
- }
-    
+    const db = new DbHelper();
+    if (
+      event == "bot.call_ended" ||
+      event == "bot.fatal" ||
+      event == "bot.done"
+    ) {
+      db.deleteMeetingBot(botId);
+    } else {
+      if (
+        event == "bot.in_call_recording" ||
+        event == "bot.in_call_not_recording"
+      ) {
+        db.updateMeetingBot(botId, "ready");
+      }
+      if (event == "bot.joining_call") {
+        db.updateMeetingBot(botId, "joining");
+      }
+      if (event == "bot.in_waiting_room") {
+        db.updateMeetingBot(botId, "lobby");
+      }
+    }
+    res.json({ status: "OK" });
+  } catch (ex) {
+    res.status(500).json({ error: ex });
+  }
 });
 
 app.listen(port, () => {
-    return console.log(`Server is listening on ${port}`)
-})   
+  return console.log(`Server is listening on ${port}`);
+});
