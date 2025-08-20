@@ -62,6 +62,63 @@ class DbHelper {
             }
         });
     }
+    getSoundsCatalog() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const client = yield this._pool.connect();
+            try {
+                const { rows } = yield client.query("SELECT id, title, description, color,catalogs FROM sounds");
+                return rows.map(row => ({
+                    id: row.id,
+                    name: row.title,
+                    color: row.color,
+                    imgUrl: row.imgUrl,
+                    description: row.description,
+                    catalogs: row.catalogs
+                }));
+            }
+            catch (error) {
+                console.error("Error fetching sounds from DB:", error);
+                throw error;
+            }
+            finally {
+                client.release();
+            }
+        });
+    }
+    getSound(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const client = yield this._pool.connect();
+            try {
+                const { rows } = yield client.query("SELECT data FROM sounds WHERE id = $1", [id]);
+                return rows.map(row => ({
+                    data: row.data.toString('base64'),
+                }));
+            }
+            catch (error) {
+                console.error("Error fetching sounds from DB:", error);
+                throw error;
+            }
+            finally {
+                client.release();
+            }
+        });
+    }
+    // public async addSoundsDB(sounds:ISound[]){
+    //       const client = await this._pool.connect();
+    //       try{
+    //         await Promise.all(sounds.map(sound => {
+    //           return client.query(
+    //             "INSERT INTO sounds (title, data, color) VALUES ( $1, $2, $3)",
+    //             [sound.name, Buffer.from(sound.base64, 'base64'), sound.color]
+    //           );
+    //         }));
+    //       }catch(ex){
+    //         console.error("Error adding sounds to DB:", ex);
+    //       }
+    //       finally{
+    //         client.release()
+    //       }
+    // }
     deleteMeetingBot(botId) {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield this._pool.connect();

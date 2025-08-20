@@ -16,7 +16,6 @@ const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const process_1 = __importDefault(require("process"));
 const cors_1 = __importDefault(require("cors"));
-const sounds_1 = require("./sounds");
 const DbHelper_1 = require("./DbHelper");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config({ path: './.env' });
@@ -68,6 +67,7 @@ app.get("/invite", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     console.log("Looking for bot already in meeting:", meetingId);
     const db = new DbHelper_1.DbHelper();
     const existingBot = yield db.getMeetingBot(meetingId);
+    const sounds = yield db.getSoundsCatalog();
     if (existingBot) {
         const existingBotId = existingBot.bot_id;
         const existingBotStatus = existingBot.bot_status;
@@ -76,7 +76,7 @@ app.get("/invite", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             Id: existingBotId,
             status: existingBotStatus,
             meetingUrl: meetingUrl,
-            soundsCatalog: sounds_1.sounds,
+            soundsCatalog: sounds,
         });
     }
     else {
@@ -110,7 +110,7 @@ app.get("/invite", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     .json({ error: "Recall API response missing bot id", bot });
             }
             yield db.addMeetingBot(meetingId, bot.id, "pending");
-            res.json({ Id: bot.id, status: "pending", meetingUrl: meetingUrl, soundsCatalog: sounds_1.sounds });
+            res.json({ Id: bot.id, status: "pending", meetingUrl: meetingUrl, soundsCatalog: sounds });
         }
         catch (error) {
             console.error("Recall API error:", error);
@@ -121,8 +121,8 @@ app.get("/invite", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 app.get("/play", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const botId = req.query.botId;
     const soundId = req.query.soundId;
-    const sound = sounds_1.sounds.find((s) => s.id === soundId);
-    console.log("Received request to play for bot:", botId, "sound:", sound);
+    const sound = yield new DbHelper_1.DbHelper().getSound(Number(soundId));
+    console.log("Received request to play for bot:", botId, "sound:", soundId);
     if (!botId) {
         return res.status(400).json({ error: "Missing bot ID" });
     }
@@ -135,7 +135,7 @@ app.get("/play", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             },
             body: JSON.stringify({
                 kind: "mp3",
-                b64_data: sound === null || sound === void 0 ? void 0 : sound.base64,
+                b64_data: sound[0].data,
             }),
         });
         console.log("Response from Recall API:", response.status, response.statusText, response);
@@ -166,6 +166,28 @@ app.get("/status", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(404).json({ error: "No bot found for this meeting" });
     }
 }));
+app.get("/sounds", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const db = new DbHelper_1.DbHelper();
+    try {
+        const sounds = yield db.getSoundsCatalog();
+        res.json(sounds);
+    }
+    catch (error) {
+        console.error("Error fetching sounds:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}));
+// app.get("/saveSounds", async (req: any, res: any) => {
+//     console.log("Received request to save sounds");
+//     const db = new DbHelper();
+//     try {
+//         await db.addSoundsDB(sounds);
+//         res.json({ status: "Sounds saved successfully" });
+//     } catch (error) {
+//         console.error("Error saving sounds:", error);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// })
 app.post("/updateBot", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { data, event } = req.body;
