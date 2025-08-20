@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import * as microsoftTeams from "@microsoft/teams-js";
 import "./App.css";
 import { FluentProvider, teamsLightTheme } from "@fluentui/react-components";
-import { Share24Regular, Checkmark24Filled, Share16Regular, Checkmark16Filled } from "@fluentui/react-icons";
+import { Share16Regular, Checkmark16Filled } from "@fluentui/react-icons";
 import { logo } from "./assets/images";
 import { SoundBtn } from "./SoundBtn";
 
