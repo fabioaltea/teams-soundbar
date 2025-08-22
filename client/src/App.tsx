@@ -35,9 +35,20 @@ function App() {
 
   useEffect(() => {
     if (meetingUrl && meetingUrl != "") {
-      const meetingNumericIdMatch = meetingUrl.match(/meet\/(\d+)/);
-      if (meetingNumericIdMatch && meetingNumericIdMatch[1]) {
-        setMeetingId(meetingNumericIdMatch[1]);
+      const decodedUri=decodeURI(meetingUrl)
+      if (decodedUri.includes("/19%3ameeting_")) {
+        const id=decodedUri.substring(
+            decodedUri.lastIndexOf("/19%3ameeting_") + 1,
+            decodedUri.lastIndexOf("%40thread.v2/0")
+          )
+        setMeetingId(
+          id
+        );
+      } else {
+        const meetingNumericIdMatch = meetingUrl.match(/meet\/(\d+)/);
+        if (meetingNumericIdMatch && meetingNumericIdMatch[1]) {
+          setMeetingId(meetingNumericIdMatch[1]);
+        }
       }
     } else {
       setMeetingId("");
